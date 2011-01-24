@@ -1,0 +1,8 @@
+A tab system based on Scriptaculous and Prototype.js.
+
+Goals:
+
+* Easy tab panel creation from basic markup
+* Easy dynamic addition of tabs
+* Drag & drop reordering of tabs
+* Ability to split a tab panel in halt to have two tabs open side by side
