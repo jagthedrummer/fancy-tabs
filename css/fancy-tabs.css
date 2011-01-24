@@ -1,0 +1,49 @@
+.fancy-tabs{
+	border:1px solid red;
+}
+
+.fancy-tab-frame{
+	border:1px solid blue;
+}
+
+.fancy-tab-frame .fancy-tab{
+	border:1px solid black;
+	float:left;
+	padding:3px 10px;
+}
+
+
+.fancy-content-frame{
+	border:1px solid green;
+}
+
+.tab-handle{
+border:1px solid #ccc;		
+}
+
+.fancy-tab-gutter .tab-handle{
+	float:left;	
+}
+
+
+
+.fancy-tab{
+	background:#ccc;	
+}
+
+.fancy-tab.active{
+	background:#fff;	
+}
+
+.fancy-content{
+	display:none;	
+}
+
+.fancy-content.active{
+	display:block;	
+}
+
+
+/*This lets us make sure that the fancy-tab-gutter will always enclose the tabs inside it.*/
+.clearfix:after{content:"\0020";display:block;height:0;clear:both;visibility:hidden;overflow:hidden;}
+.clearfix {display:block;}
