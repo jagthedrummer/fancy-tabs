@@ -98,41 +98,75 @@ function FancyTabs(tabContainer,options){
 	this.initContainer();
 }
 
-/*This class represents the tabs themselves */
-function FancyTab(handle, content, parent){
-	this.handle = handle;
-	this.content = content;	
-	this.parent = parent;
+/*
+ * This class represents the tabs themselves.
+ * This should not be used directly.
+ * Once you've created a tab set you'd want to call
+ * tabs.addTab("My new tab","Some content");
+ */
+
+var FancyTab = Class.create({
+	/*
+	 * Initialize a new tab
+	 * handle : the text to go into the tab itself
+	 * content : the content for the panel the tab represents
+	 * parent : the FancyTabs object that creates this tab
+	 */	
+	initialize: function(handle, content, parent){
+		this.handle = handle;
+		this.content = content;	
+		this.parent = parent;
+		
+		this.tab_elem = new Element('li', {'class': 'fancy-tab'})
+		this.handle_elem = new Element('div', {'class': 'fancy-tab-handle'}).update(this.handle);
+		this.closer_elem = new Element('a', {'class':'fancy-tab-close'})
+		this.tab_elem.appendChild(this.handle_elem);
+		this.tab_elem.appendChild(this.closer_elem);
+		this.content_elem = new Element('div', {'class': 'fancy-content'}).update(this.content);
+		this.tab_elem.observe(this.parent.options.onEvent,this.activateTab.bind(this));
+		this.closer_elem.observe('click',this.closeTab.bind(this));
+	},
 	
-	this.activateTab = function(){
-		parent.setActiveTab(this);
-	};
+	/*
+	 * Listens for a click and sets things in 
+	 * motion with parent set of FancyTabs
+	 */
+	activateTab : function(){
+		this.parent.setActiveTab(this);
+	},
 	
-	this.showTab = function(){
+	
+	/*
+	 * Called by the parent to signal 
+	 * this tab to activiate itself visually
+	 */
+	showTab : function(){
 		this.content_elem.addClassName("active");
 		this.tab_elem.addClassName("active");
-	};
+	},
 	
-	this.closeTab = function(event){
-		parent.closeTab(this);
-		//let's keep the tab from trying to activate itself after it's been removed.
-		Event.stop(event);
-	};
-	
-	this.hideTab = function(){
+	/*
+	 * Called by the parent to signal 
+	 * this tab to deactiviate itself visually
+	 */
+	hideTab : function(){
 		this.content_elem.removeClassName("active");
 		this.tab_elem.removeClassName("active");
-	};
-	this.tab_elem = new Element('li', {'class': 'fancy-tab'})
-	this.handle_elem = new Element('div', {'class': 'fancy-tab-handle'}).update(this.handle);
-	this.closer_elem = new Element('a', {'class':'fancy-tab-close'})
-	this.tab_elem.appendChild(this.handle_elem);
-	this.tab_elem.appendChild(this.closer_elem);
-	this.content_elem = new Element('div', {'class': 'fancy-content'}).update(this.content);
-	this.tab_elem.observe(this.parent.options.onEvent,this.activateTab.bind(this));
-	this.closer_elem.observe('click',this.closeTab.bind(this));
+	},
+	
+	/*
+	 * Listens for a click on the close button and 
+	 * then notifies the parent.
+	 */
+	closeTab : function(event){
+		this.parent.closeTab(this);
+		//let's keep the tab from trying to activate itself after it's been removed.
+		Event.stop(event);
+	}
+	
+	
+});
 
-}
 
 
 
