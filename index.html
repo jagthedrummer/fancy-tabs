@@ -10,7 +10,7 @@
 	<script src="lib/prototype.js" type="text/javascript"></script>
 	<script src="lib/effects.js" type="text/javascript"></script>
 	<script src="lib/dragdrop.js" type="text/javascript"></script>
-	
+	<script src="lib/splitpane.js" type="text/javascript"></script>
 	<script src="js/fancy-tabs.js" type="text/javascript"></script>
 
 	<script type="text/javascript">
@@ -25,6 +25,8 @@
 		function createTabs(){
 			tabs = new FancyTabs('demo-tabs',{})
 			tabs2 = new FancyTabs('demo-tabs-2',{})
+			tabs.addTabSet(tabs2);
+			tabs2.addTabSet(tabs);
 			$('new_tab_add').observe('click',createNewTab);			
 		}
 		
@@ -93,6 +95,23 @@
 		<br/>
 		<input type="button" id="new_tab_add" value="Add the tab">
 	</form>
+
+
+<div id="parent">
+<div id="lhs" class="column"><p class="content">
+<span style="display: block; white-space: nowrap; overflow: hidden">This is some clipped text that will be in the left column.</span>
+<span style="display: block">This is some wrapped text that will be in the left column.</span>
+</p></div>
+<div id="mid" class="column"><p class="content">This is some text that will be in the middle column.</p></div>
+<div id="rhs" class="column"><p class="content">This is some text that will be in the right column.</p></div>
+</div>
+
+<script language="JavaScript" type="text/JavaScript">
+<!--
+new SplitPane("lhs", 33.3, "mid", 33.33, 33.3, { active: true });
+new SplitPane("mid", 33.3, "rhs", 66.66, 33.3, { active: true }); //
+-->
+</script>
 
 </body>
 </html>

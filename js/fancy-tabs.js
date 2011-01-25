@@ -22,6 +22,7 @@ var FancyTabs = Class.create({
 			onEvent : 'click'
 		};
 		this.tabs = $A();
+		this.otherTabSets = $A();
 		this.currentTab = null;
 		if(options != null){
 			Object.extend(this.options,options);
@@ -30,6 +31,7 @@ var FancyTabs = Class.create({
 		this.initContentFrame();
 		this.initDroppables();
 		this.initContainer();
+		
 	},
 	
 	/*
@@ -54,9 +56,46 @@ var FancyTabs = Class.create({
 	initDroppables : function(){
 		this.droppableEast = new Element('div', {'class': 'fancy-droppable-east','id':this.id+'-droppable-east'});
 		this.contentFrame.appendChild(this.droppableEast);
-		Droppables.add(this.droppableEast,{hoverclass:'dropzone'})
+		
 	},
 	
+	/*
+	 * Pass in another tabSet so that tabs
+	 * can be dragged from one to the other.
+	 */
+	addTabSet : function(tabSet){
+		this.otherTabSets.push(tabSet);
+		this.initDragsAndSorts();
+	},
+	
+	/*
+	 * Called periodically to updated
+	 * the sortables and draggables to 
+	 * respond to other tabSets or tabs.
+	 */
+	initDragsAndSorts: function(){
+		Droppables.add(this.droppableEast,{hoverclass:'dropzone',containment:this.combinedDragTargets(),accept:'fancy-tab'})
+		Sortable.create(this.tabFrame.id,{overlap:'horizontal',
+										  constraint:false,
+										  containment:this.combinedDragTargets(),
+										  onChange : function(elem){console.log(elem + " onChange")},
+										  onUpdate : this.sortUpdate.bind(this)
+										  }
+					    );
+	},
+	
+	sortUpdate : function(list){
+		console.log("sortUpdate on  elem =" + list);
+		var tabs = list.childElements(); 
+		for(var i = 0; i< tabs.length; i ++){
+			tab = tabs[i];
+			if(tab.tab_set.id != this.id){
+				console.log("need to move for " + tab.innerHTML + " " + this.id + " - " + tab.tab_set.id)
+				tab.tab_set.removeTabContent(tab.fancy_tab);
+				this.insertTab(tab.fancy_tab);
+			}
+		}
+	},
 	
 	initContainer : function(){
 		handles = this.tabContainer.select("." + this.options.classNames.handle);
@@ -72,22 +111,46 @@ var FancyTabs = Class.create({
 	},
 	
 	dragTargets : function(){
-		return [this.droppableEast,this.tabFrame]
+		var targets = [this.droppableEast,this.tabFrame];
+		return targets;
+	},
+	
+	combinedDragTargets : function(){
+		var targets = this.dragTargets();
+		//console.log("targets = " + targets);
+		
+		//targets.concat(["testing"]);
+		this.otherTabSets.each(function(set){
+			console.log(targets);
+			targets = targets.concat(set.dragTargets());
+		}.bind(targets));
+		console.log("targets = " + targets);
+		return targets;
 	},
 	
 	/*pass in the elements/content to be used as the tab handle/content*/
 	addTab : function(handle,content){
 		var tab = new FancyTab(handle,content,this);
 		this.tabFrame.appendChild(tab.tab_elem);
+		this.insertTab(tab);
+	},
+	
+	/*
+	 * This is called to insert a FancyTab object into this set
+	 */
+	insertTab : function(tab){
+		tab.setParent(this);
+		
 		this.contentFrame.appendChild(tab.content_elem);
 		this.tabs.push(tab);
 		this.setActiveTab(tab);
-		Sortable.create(this.tabFrame.id,{overlap:'horizontal',constraint:false,containment:this.dragTargets()});
+		this.initDragsAndSorts();
 	},
 	
-	closeTab : function(tab){
-		console.log("removing for " + tab.handle_elem.innerHTML)
-		this.tabFrame.removeChild(tab.tab_elem);
+	/*
+	 * Removes tab content after a move or close
+	 */
+	removeTabContent : function(tab){
 		this.contentFrame.removeChild(tab.content_elem);
 		this.tabs = this.tabs.without(tab);
 		if(this.tabs.length > 0){
@@ -98,10 +161,18 @@ var FancyTabs = Class.create({
 		}else{
 			this.setActiveTab(null);
 		}
+		this.initDragsAndSorts();
+	},
+	
+	closeTab : function(tab){
+		console.log("removing on" + this.id + " for " + tab.handle_elem.innerHTML)
+		this.tabFrame.removeChild(tab.tab_elem);
+		removeTabContent(tab);
+		
 	},
 	
 	setActiveTab : function(tab){
-		console.log('activating ' + tab.handle_elem.innerHTML + " tabs.length = " + this.tabs.length);
+		//console.log('activating ' + tab.handle_elem.innerHTML + " tabs.length = " + this.tabs.length);
 		if(this.currentTab!=null){
 			this.currentTab.hideTab();
 		}
@@ -111,7 +182,7 @@ var FancyTabs = Class.create({
 		}
 	}
 	
-})
+});
 
 
 
@@ -132,9 +203,12 @@ var FancyTab = Class.create({
 	initialize: function(handle, content, parent){
 		this.handle = handle;
 		this.content = content;	
-		this.parent = parent;
+		
 		
 		this.tab_elem = new Element('li', {'class': 'fancy-tab'})
+		//a couple of hacks to let even passing work out right.		
+		this.setParent(parent);
+		this.tab_elem.fancy_tab = this;
 		this.handle_elem = new Element('div', {'class': 'fancy-tab-handle'}).update(this.handle);
 		this.closer_elem = new Element('a', {'class':'fancy-tab-close'})
 		this.tab_elem.appendChild(this.handle_elem);
@@ -142,6 +216,15 @@ var FancyTab = Class.create({
 		this.content_elem = new Element('div', {'class': 'fancy-content'}).update(this.content);
 		this.tab_elem.observe(this.parent.options.onEvent,this.activateTab.bind(this));
 		this.closer_elem.observe('click',this.closeTab.bind(this));
+	},
+	
+	/*
+	 * Convenience method for stashing the right
+	 * references to the parent.
+	 */
+	setParent : function (parent){
+		this.parent = parent;
+		this.tab_elem.tab_set = parent;
 	},
 	
 	/*
