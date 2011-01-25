@@ -3,11 +3,12 @@
  if (typeof Effect == 'undefined')
   throw("You must have the script.aculo.us library to use FancyTabs. (https://github.com/jagthedrummer/fancy-tabs)");
 
+
+
+
 var FancyTabs = Class.create({
-	
-	
 	/*
-	 * Construct a new FancyTabs set
+	 * Construct a new FancyTabs object
 	 * tabContainer : the container on the page that will get the tabs
 	 * options : options for the tabs
 	 */
@@ -26,30 +27,254 @@ var FancyTabs = Class.create({
 			primary : true, //conrols whether it automatially goes away when the last tab is closed
 		};
 		
-		this.tabs = $A();
-		this.otherTabSets = $A();
+		this.tabSets = $A();
+		this.otherFancyTabs = $A();
+		
 		this.currentTab = null;
 		if(options != null){
 			Object.extend(this.options,options);
 		}
-		this.splitPane = this.options.splitPane;
-		this.splitCol = this.options.splitCol;
+		this.initSplitPane();
+		//this.splitPane = this.options.splitPane;
+		//this.splitCol = this.options.splitCol;
+		
+		//this.initTabSet();
+		//this.initTabFrame();
+		//this.initContentFrame();
+		//this.initDroppables();
+		if(this.options.parseContainer){
+			this.parseContainer();
+		}	
+	},
+	
+	parseContainer : function(){
+		handles = this.tabContainer.select("." + this.options.classNames.handle);
+		contents = this.tabContainer.select("." + this.options.classNames.content);
+		if(handles.length != contents.length){
+			throw("The number of handle divs ("+handles.length+") vs. content divs ("+contents.length+") does not match up.");
+			return;
+		}
+		for(var i=0; i<handles.length; i++){
+			this.addTab(handles[i],contents[i]);
+		}
+		//this.setActiveTab(this.tabs.first());
+	},
+	
+	initSplitPane : function(){
+		
+		// First create a div that will be the parent for our new SplitPane
+		this.splitPane = new Element('div', {'class': 'clearfix fancy-split-pane'});
+		this.splitPane.panes = $A(); //This will hold all of the split panes that get created
+		this.tabContainer.insert( this.splitPane );
+		//this.splitCol = new Element('div', {'class': 'fancy-split-col','id': 'col1'  });
+		//this.splitCol.setStyle( {'width' : '100%', 'left':'0%'});
+		
+		//this.splitPane.insert(this.splitCol);
+		//Now add the split pane to the markup right before our existing tab set
+		
+		//Now move the tab container into the first column
+		//this.splitCol.insert(this.tabContainer);
+	},
+	
+	/*
+	 * Add other FancyTabs objects that we shoudl 
+	 * cooperate with
+	 */
+	addFancyTabs : function(otherTabs){
+		this.otherFancyTabs.push(otherTabs);
+	},
+	
+	
+	/*
+	 * All drag targets for this set of tabs
+	 */
+	allDragTargets : function(){
+		targets = this.otherDragTargets();
+		targets = targets.concat(this.allLocalDragTargets());
+		return targets;
+	},
+	
+	/*
+	 * Targest coming from exernally created
+	 * additiona FancyTabs objects
+	 */
+	otherDragTargets : function() {
+		targets = $A();
+		this.otherFancyTabs.each(function(tabs){
+			//console.log(targets);
+			targets = targets.concat(tabs.allLocalDragTargets());
+		}.bind(targets));
+		return targets;
+	},
+	
+	/*
+	 * These are targets associated with the current
+	 * FancyTabs Object (in any FancyTabSet)
+	 */
+	allLocalDragTargets : function() {
+		var targets = $A();
+		console.log("getting localDragTargets from sets : " + this.tabSets.length)
+		this.tabSets.each(function(set){
+			//console.log(targets);
+			targets = targets.concat(set.dragTargets());
+		}.bind(targets));
+		return targets;
+	},
+	
+	addNewSplitCol : function(afterCol){
+		this.unSplit();
+		var splitCol = new Element('div', {'class': 'fancy-split-col','id': 'col1'  });
+		
+		if(afterCol == null){
+			afterCol = this.splitCols().last();
+		}
+		if (afterCol != null) {
+			origWidth = this.parsePercent(afterCol.style.width);
+			origLeft = this.parsePercent(afterCol.style.left);
+			newWidth = origWidth/2;
+			newLeft = origLeft + newWidth;
+			afterCol.setStyle({'width' : newWidth + "%" })
+			splitCol.setStyle({'width' : newWidth + "%", 'left' : newLeft + "%" })
+		} else {
+			splitCol.setStyle({'width': '100%','left': '0%'});
+		}
+		//this.splitCols.push(splitCol);
+		var newTabs = new FancyTabSet(this,splitCol);
+		this.tabSets.push(newTabs);
+		splitCol.fancyTabSet = newTabs;
+		//splitCol.insert(newTabs.tabSet);
+		if (afterCol != null) {
+			afterCol.insert({ 'after' : splitCol });
+		} else {
+			this.splitPane.insert(splitCol);
+		}
+		this.reSplit();
+		return splitCol;
+	},
+	
+	
+	removeSplitCol : function(oldCol){
+		this.unSplit();
+		this.tabSets = this.tabSets.without(oldCol.fancyTabSet);
+		var prevCol = oldCol.previous();
+		if (prevCol != null) {
+			console.log("we found a previous element")
+			origWidth = this.parsePercent(prevCol.style.width);
+			oldWidth = this.parsePercent(oldCol.style.width);
+			newWidth = origWidth + oldWidth;
+			prevCol.setStyle({'width': newWidth + "%"});
+		}else{
+			var nextCol = oldCol.next();
+			if(nextCol != null){
+				console.log("we fould a next() element");
+				origWidth = this.parsePercent(nextCol.style.width);
+				oldWidth = this.parsePercent(oldCol.style.width);
+				oldLeft = this.parsePercent(oldCol.style.left);
+				newWidth = origWidth + oldWidth;
+				newLeft = oldLeft - oldWidth
+				nextCol.setStyle({'width': newWidth + "%", 'left' : newLeft + "%" });
+			}
+		}
+		Droppables.remove(oldCol.fancyTabSet.droppableEast);
+		//Sortable.destroy(oldCol.tabFrame);
+		oldCol.parentNode.removeChild(oldCol);
+		this.reSplit();
+	},
+	
+	splitCols : function(){
+		return this.splitPane.select(".fancy-split-col");
+	},
+	
+	reSplit : function(){
+		var cols = this.splitCols();
+		if(cols.length > 1){
+			for(var c = 0; c < cols.length -1; c++ ){
+				//var width = 100/cols.length;
+				//var offset = i * width;
+				var col1 = cols[c];
+				var col2 = cols[c+1];
+				console.log("col1 " + col1.style.width + " " + col1.style.left );
+				console.log("col2 " + col2.style.width + " " + col2.style.left );
+				var newPane = new SplitPane(col1, col1.style.width, col2, col2.style.left, col2.style.width, { active: true });
+				newPane.set();
+				this.splitPane.panes.push(newPane);
+			}
+		}
+	},
+	
+	unSplit : function(){
+		this.splitPane.panes.each(function(pane){ pane.dispose(); });
+		this.splitPane.panes = $A();
+		
+	},
+	
+	moveTabAfterCol : function(fancyTab,afterCol){
+		var newCol = this.addNewSplitCol(afterCol);
+		fancyTab.parent.removeTabContent(fancyTab);
+		newCol.fancyTabSet.addFancyTab(fancyTab);
+		newCol.fancyTabSet.setActiveTab(fancyTab);
+		afterCol.fancyTabSet.setActiveTab(afterCol.fancyTabSet.tabs.first());
+	},
+	
+	/*pass in the elements/content to be used as the tab handle/content*/
+	addTab : function(handle,content){
+		if(this.splitCols().length == 0){
+			this.addNewSplitCol();
+		}
+		this.splitCols().first().fancyTabSet.addTab(handle,content);
+	},
+	
+	parsePercent : function(percentString){
+		regex = /(\d+\.?\d*)\%/
+		return parseFloat(regex.exec(percentString)[1]);
+	}
+	
+});
+
+
+
+
+/*
+ * This class represents a single 'pane' of 
+ * sortable/closeable tabs.
+ */
+	
+var FancyTabSet = Class.create({
+
+	/*
+	 * Construct a new FancyTabSet
+	 * fancyTabs : The main FancyTabs object that controls this set
+	 */
+	initialize: function(fancyTabs,splitCol){
+		this.id = "fancy-tab-set-" + Math.floor(Math.random()*100000);
+		this.fancyTabs = fancyTabs;
+		this.splitCol = splitCol;
+		this.splitCol.fancyTabSet = this; 
+		this.tabs = $A();
+		
+		this.otherTabSets = $A();
+		this.currentTab = null;
+		
+		
 		
 		this.initTabSet();
 		this.initTabFrame();
 		this.initContentFrame();
 		this.initDroppables();
-		if(this.options.parseContainer){
+		/*if(this.options.parseContainer){
 			this.initContainer();
-		}	
+		}*/	
 	},
+	
+	
 	
 	/*
 	 * Setup the main container that will hold everything together
 	 */
 	initTabSet : function(){
 		this.tabSet = new Element('div', {'class': 'clearfix fancy-tab-set','id':this.id+'-tab-set'});
-		this.tabContainer.appendChild(this.tabSet);
+		this.splitCol.appendChild(this.tabSet);
+		//this.tabContainer.appendChild(this.tabSet);
 	},
 	
 	/*
@@ -93,18 +318,18 @@ var FancyTabs = Class.create({
 	 */
 	initDragsAndSorts: function(){
 		Droppables.add(this.droppableEast,{hoverclass:'dropzone',
-										   containment:this.combinedDragTargets(),
+										   containment:this.fancyTabs.allDragTargets(),
 										   accept:'fancy-tab',
 										   onDrop: this.eastDrop.bind(this)
 										   }
 					  );
 					  
-		Sortable.create(this.tabFrame.id,{overlap:'horizontal',
+		Sortable.create(this.tabFrame,{overlap:'horizontal',
 										  constraint:false,
 										  ghosting : false,
 										  revert : false,
 										  dropOnEmpty : true,
-										  containment:this.combinedDragTargets(),
+										  containment:this.fancyTabs.allDragTargets(),
 										  onChange : function(elem){},
 										  onUpdate : this.sortUpdate.bind(this)
 										  }
@@ -112,7 +337,11 @@ var FancyTabs = Class.create({
 	},
 	
 	eastDrop : function(tab){
+		console.log(tab);
+		var col = this.splitCol;
+		this.fancyTabs.moveTabAfterCol(tab.fancy_tab,col);
 		
+		/*
 		if (this.splitPane == null) {
 			this.initSplitPane();
 		}else{
@@ -149,15 +378,12 @@ var FancyTabs = Class.create({
 				
 		
 		//SplitPane.setAll(); 
+		*/
 		
-		console.log(tab)
 	},
 	
 	
-	parsePercent : function(percentString){
-		regex = /(\d+\.?\d*)\%/
-		return parseFloat(regex.exec(percentString)[1]);
-	},
+	
 	
 	removeFromSplitPane : function(){
 		this.unSplit();
@@ -174,22 +400,7 @@ var FancyTabs = Class.create({
 		this.reSplit();
 	},
 	
-	reSplit : function(){
-		var cols = this.splitPane.select(".fancy-split-col");
-		if(cols.length > 1){
-			for(var c = 0; c < cols.length -1; c++ ){
-				//var width = 100/cols.length;
-				//var offset = i * width;
-				var col1 = cols[c];
-				var col2 = cols[c+1];
-				console.log("col1 " + col1.style.width + " " + col1.style.left );
-				console.log("col2 " + col2.style.width + " " + col2.style.left );
-				var newPane = new SplitPane(col1, col1.style.width, col2, col2.style.left, col2.style.width, { active: true });
-				newPane.set();
-				this.splitPane.panes.push(newPane);
-			}
-		}
-	},
+	
 	
 	sortUpdate : function(list){
 		//console.log("sortUpdate on  elem =" + list);
@@ -204,43 +415,10 @@ var FancyTabs = Class.create({
 		}
 	},
 	
-
 	
-	initSplitPane : function(){
-		
-		// First create a div that will be the parent for our new SplitPane
-		this.splitPane = new Element('div', {'class': 'clearfix fancy-split-pane'});
-		this.splitPane.panes = $A(); //This will hold all of the split panes that get created
-		
-		this.splitCol = new Element('div', {'class': 'fancy-split-col','id': 'col1'  });
-		this.splitCol.setStyle( {'width' : '100%', 'left':'0%'});
-		
-		this.splitPane.insert(this.splitCol);
-		//Now add the split pane to the markup right before our existing tab set
-		this.tabContainer.insert({ before : this.splitPane });
-		//Now move the tab container into the first column
-		this.splitCol.insert(this.tabContainer);
-		
-	},
 	
-	unSplit : function(){
-		this.splitPane.panes.each(function(pane){ pane.dispose(); });
-		this.splitPane.panes = $A();
-		
-	},
 	
-	initContainer : function(){
-		handles = this.tabContainer.select("." + this.options.classNames.handle);
-		contents = this.tabContainer.select("." + this.options.classNames.content);
-		if(handles.length != contents.length){
-			throw("The number of handle divs ("+handles.length+") vs. content divs ("+contents.length+") does not match up.");
-			return;
-		}
-		for(var i=0; i<handles.length; i++){
-			this.addTab(handles[i],contents[i])
-		}
-		this.setActiveTab(this.tabs.first());
-	},
+	
 	
 	dragTargets : function(){
 		var targets = [this.droppableEast,this.tabFrame];
@@ -270,6 +448,9 @@ var FancyTabs = Class.create({
 	 * For passing in a pre built tab
 	 */
 	addFancyTab : function(tab){
+		console.log(tab.tab_elem)
+		console.log(tab)
+		console.log(this.tabFrame)
 		this.tabFrame.appendChild(tab.tab_elem);
 		this.insertTab(tab);
 	},
@@ -302,9 +483,7 @@ var FancyTabs = Class.create({
 			this.setActiveTab(first_tab);
 		}else{
 			this.setActiveTab(null);
-			if(!this.options.primary){
-				this.removeFromSplitPane();
-			}
+			this.fancyTabs.removeSplitCol(this.splitCol);
 		}
 		this.initDragsAndSorts();
 	},
@@ -358,7 +537,7 @@ var FancyTab = Class.create({
 		this.tab_elem.appendChild(this.handle_elem);
 		this.tab_elem.appendChild(this.closer_elem);
 		this.content_elem = new Element('div', {'class': 'fancy-content'}).update(this.content);
-		this.tab_elem.observe(this.parent.options.onEvent,this.activateTab.bind(this));
+		this.tab_elem.observe(this.parent.fancyTabs.options.onEvent,this.activateTab.bind(this));
 		this.closer_elem.observe('click',this.closeTab.bind(this));
 	},
 	
