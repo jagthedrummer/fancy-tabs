@@ -78,19 +78,19 @@ var FancyTabs = Class.create({
 		Sortable.create(this.tabFrame.id,{overlap:'horizontal',
 										  constraint:false,
 										  containment:this.combinedDragTargets(),
-										  onChange : function(elem){console.log(elem + " onChange")},
+										  onChange : function(elem){},
 										  onUpdate : this.sortUpdate.bind(this)
 										  }
 					    );
 	},
 	
 	sortUpdate : function(list){
-		console.log("sortUpdate on  elem =" + list);
+		//console.log("sortUpdate on  elem =" + list);
 		var tabs = list.childElements(); 
 		for(var i = 0; i< tabs.length; i ++){
 			tab = tabs[i];
 			if(tab.tab_set.id != this.id){
-				console.log("need to move for " + tab.innerHTML + " " + this.id + " - " + tab.tab_set.id)
+				//console.log("need to move for " + tab.innerHTML + " " + this.id + " - " + tab.tab_set.id)
 				tab.tab_set.removeTabContent(tab.fancy_tab);
 				this.insertTab(tab.fancy_tab);
 			}
@@ -121,10 +121,10 @@ var FancyTabs = Class.create({
 		
 		//targets.concat(["testing"]);
 		this.otherTabSets.each(function(set){
-			console.log(targets);
+			//console.log(targets);
 			targets = targets.concat(set.dragTargets());
 		}.bind(targets));
-		console.log("targets = " + targets);
+		//console.log("targets = " + targets);
 		return targets;
 	},
 	
@@ -154,9 +154,9 @@ var FancyTabs = Class.create({
 		this.contentFrame.removeChild(tab.content_elem);
 		this.tabs = this.tabs.without(tab);
 		if(this.tabs.length > 0){
-			console.log(this.tabs.length);
+			//console.log(this.tabs.length);
 			var first_tab = this.tabs.first()
-			console.log(first_tab.handle_elem);	
+			//console.log(first_tab.handle_elem);	
 			this.setActiveTab(first_tab);
 		}else{
 			this.setActiveTab(null);
@@ -165,9 +165,9 @@ var FancyTabs = Class.create({
 	},
 	
 	closeTab : function(tab){
-		console.log("removing on" + this.id + " for " + tab.handle_elem.innerHTML)
+		//console.log("removing on" + this.id + " for " + tab.handle_elem.innerHTML)
 		this.tabFrame.removeChild(tab.tab_elem);
-		removeTabContent(tab);
+		this.removeTabContent(tab);
 		
 	},
 	
