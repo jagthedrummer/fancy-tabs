@@ -12,26 +12,44 @@ var FancyTabs = Class.create({
 	 * options : options for the tabs
 	 */
 	initialize: function(tabContainer,options){
-		this.id = "fancy-tabs-" + Math.floor(Math.random()*1000);
+		this.id = "fancy-tabs-" + Math.floor(Math.random()*100000);
 		this.tabContainer = $(tabContainer);
 		this.options = {
 			classNames : {
 				handle : 'handle',
 				content : 'content'
 			},
-			onEvent : 'click'
+			parseContainer : true,
+			onEvent : 'click',
+			splitPane : null,
+			splitCol : null,
+			primary : true, //conrols whether it automatially goes away when the last tab is closed
 		};
+		
 		this.tabs = $A();
 		this.otherTabSets = $A();
 		this.currentTab = null;
 		if(options != null){
 			Object.extend(this.options,options);
 		}
+		this.splitPane = this.options.splitPane;
+		this.splitCol = this.options.splitCol;
+		
+		this.initTabSet();
 		this.initTabFrame();
 		this.initContentFrame();
 		this.initDroppables();
-		this.initContainer();
-		
+		if(this.options.parseContainer){
+			this.initContainer();
+		}	
+	},
+	
+	/*
+	 * Setup the main container that will hold everything together
+	 */
+	initTabSet : function(){
+		this.tabSet = new Element('div', {'class': 'clearfix fancy-tab-set','id':this.id+'-tab-set'});
+		this.tabContainer.appendChild(this.tabSet);
 	},
 	
 	/*
@@ -39,7 +57,7 @@ var FancyTabs = Class.create({
 	 */
 	initTabFrame : function(){
 		this.tabFrame = new Element('ul', {'class': 'clearfix fancy-tab-frame','id':this.id+'-tab-frame'});
-		this.tabContainer.appendChild(this.tabFrame);
+		this.tabSet.appendChild(this.tabFrame);
 	},
 	
 	/*
@@ -47,7 +65,7 @@ var FancyTabs = Class.create({
 	 */
 	initContentFrame : function(){
 		this.contentFrame = new Element('div', {'class': 'clearfix fancy-content-frame','id':this.id+'-content-frame'});
-		this.tabContainer.appendChild(this.contentFrame);
+		this.tabSet.appendChild(this.contentFrame);
 	},
 	
 	/*
@@ -74,14 +92,103 @@ var FancyTabs = Class.create({
 	 * respond to other tabSets or tabs.
 	 */
 	initDragsAndSorts: function(){
-		Droppables.add(this.droppableEast,{hoverclass:'dropzone',containment:this.combinedDragTargets(),accept:'fancy-tab'})
+		Droppables.add(this.droppableEast,{hoverclass:'dropzone',
+										   containment:this.combinedDragTargets(),
+										   accept:'fancy-tab',
+										   onDrop: this.eastDrop.bind(this)
+										   }
+					  );
+					  
 		Sortable.create(this.tabFrame.id,{overlap:'horizontal',
 										  constraint:false,
+										  ghosting : false,
+										  revert : false,
+										  dropOnEmpty : true,
 										  containment:this.combinedDragTargets(),
 										  onChange : function(elem){},
 										  onUpdate : this.sortUpdate.bind(this)
 										  }
 					    );
+	},
+	
+	eastDrop : function(tab){
+		
+		if (this.splitPane == null) {
+			this.initSplitPane();
+		}else{
+			this.unSplit();
+		}	
+		
+		var col1 = this.splitCol;
+						
+		
+		origWidth = this.parsePercent(col1.style.width);
+		origLeft = this.parsePercent(col1.style.left);
+		
+		newWidth = origWidth/2;
+		newLeft = origLeft + newWidth;
+		
+		col1.setStyle({'width' : newWidth + "%" })
+			 
+		//create our new column that goes on the right
+		var newCol = new Element('div', {'class': 'fancy-split-col','id': 'col2'});
+		newCol.setStyle({'width' : newWidth + "%", 'left' : newLeft + "%" })
+		this.splitCol.insert({after: newCol});
+		// Create a new tab container div in col2
+		var newTabDiv = new Element('div', {'class': 'clearfix'});
+		newCol.insert(newTabDiv);
+		
+		var newTabs = new FancyTabs(newTabDiv, {splitPane : this.splitPane, splitCol : newCol, primary : false } );
+				
+		tab.fancy_tab.parent.removeTabContent(tab.fancy_tab);
+		newTabs.addFancyTab(tab.fancy_tab);
+		newTabs.addTabSet(this);
+		this.addTabSet(newTabs);
+		
+		this.reSplit();
+				
+		
+		//SplitPane.setAll(); 
+		
+		console.log(tab)
+	},
+	
+	
+	parsePercent : function(percentString){
+		regex = /(\d+\.?\d*)\%/
+		return parseFloat(regex.exec(percentString)[1]);
+	},
+	
+	removeFromSplitPane : function(){
+		this.unSplit();
+		var prevCol = this.splitCol.previous();
+		if(prevCol != null){
+			origWidth = this.parsePercent(prevCol.style.width);
+			myWidth = this.parsePercent(this.splitCol.style.width);
+			newWidth = origWidth + myWidth;
+			prevCol.setStyle({'width': newWidth + "%"});
+		}else{
+			console.log("we don't have a previous col!");
+		}
+		this.splitCol.parentNode.removeChild(this.splitCol);
+		this.reSplit();
+	},
+	
+	reSplit : function(){
+		var cols = this.splitPane.select(".fancy-split-col");
+		if(cols.length > 1){
+			for(var c = 0; c < cols.length -1; c++ ){
+				//var width = 100/cols.length;
+				//var offset = i * width;
+				var col1 = cols[c];
+				var col2 = cols[c+1];
+				console.log("col1 " + col1.style.width + " " + col1.style.left );
+				console.log("col2 " + col2.style.width + " " + col2.style.left );
+				var newPane = new SplitPane(col1, col1.style.width, col2, col2.style.left, col2.style.width, { active: true });
+				newPane.set();
+				this.splitPane.panes.push(newPane);
+			}
+		}
 	},
 	
 	sortUpdate : function(list){
@@ -95,6 +202,31 @@ var FancyTabs = Class.create({
 				this.insertTab(tab.fancy_tab);
 			}
 		}
+	},
+	
+
+	
+	initSplitPane : function(){
+		
+		// First create a div that will be the parent for our new SplitPane
+		this.splitPane = new Element('div', {'class': 'clearfix fancy-split-pane'});
+		this.splitPane.panes = $A(); //This will hold all of the split panes that get created
+		
+		this.splitCol = new Element('div', {'class': 'fancy-split-col','id': 'col1'  });
+		this.splitCol.setStyle( {'width' : '100%', 'left':'0%'});
+		
+		this.splitPane.insert(this.splitCol);
+		//Now add the split pane to the markup right before our existing tab set
+		this.tabContainer.insert({ before : this.splitPane });
+		//Now move the tab container into the first column
+		this.splitCol.insert(this.tabContainer);
+		
+	},
+	
+	unSplit : function(){
+		this.splitPane.panes.each(function(pane){ pane.dispose(); });
+		this.splitPane.panes = $A();
+		
 	},
 	
 	initContainer : function(){
@@ -131,6 +263,13 @@ var FancyTabs = Class.create({
 	/*pass in the elements/content to be used as the tab handle/content*/
 	addTab : function(handle,content){
 		var tab = new FancyTab(handle,content,this);
+		this.addFancyTab(tab);
+	},
+	
+	/*
+	 * For passing in a pre built tab
+	 */
+	addFancyTab : function(tab){
 		this.tabFrame.appendChild(tab.tab_elem);
 		this.insertTab(tab);
 	},
@@ -147,6 +286,9 @@ var FancyTabs = Class.create({
 		this.initDragsAndSorts();
 	},
 	
+	
+
+	
 	/*
 	 * Removes tab content after a move or close
 	 */
@@ -160,6 +302,9 @@ var FancyTabs = Class.create({
 			this.setActiveTab(first_tab);
 		}else{
 			this.setActiveTab(null);
+			if(!this.options.primary){
+				this.removeFromSplitPane();
+			}
 		}
 		this.initDragsAndSorts();
 	},
@@ -167,8 +312,7 @@ var FancyTabs = Class.create({
 	closeTab : function(tab){
 		//console.log("removing on" + this.id + " for " + tab.handle_elem.innerHTML)
 		this.tabFrame.removeChild(tab.tab_elem);
-		this.removeTabContent(tab);
-		
+		this.removeTabContent(tab);	
 	},
 	
 	setActiveTab : function(tab){

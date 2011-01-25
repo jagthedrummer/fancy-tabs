@@ -23,7 +23,6 @@
 	-moz-border-radius-topright: 5px;
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
-	background:#ccc;
 	cursor:default;
 }
 
@@ -54,11 +53,17 @@
 	border:1px solid black;
 	padding:10px;
 	position:relative;
+	height:100%;
 	z-index:1;
 }
 
 .tab-handle{
 border:1px solid #ccc;		
+}
+
+
+.fancy-tab-set{
+	height:100%;
 }
 
 .fancy-tab-gutter .tab-handle{
@@ -94,6 +99,25 @@ border:1px solid #ccc;
 }
 
 
+.fancy-split-pane{
+	border:1px solid red;
+	width: 100%;
+}
+
+.fancy-split-col{
+	float: left; /* This is forces the page content to adjust to changes in height of the columns */ 
+    /*overflow: hidden;*/ /* As a precaution, all content is clipped to the column width */ 
+    margin: 0; /* This and padding need to be zero */ 
+    padding: 0;
+    z-index: 1;
+    width: 50%; /* Default value, overridden by class */ 
+    height:100%;
+	
+}
+
+.fancy-split-col-content{
+	padding:10px;
+}
 /*
  * Divider stuff
  * This needs to be cleaned up.
@@ -104,14 +128,20 @@ border:1px solid #ccc;
 .splitpane-divider {
     border: 1px solid black;
     background:#5B207B;
-    opacity: .5;
+    opacity: .20;
+    filter: alpha(opacity=20);
+}
+
+.splitpane-divider:hover{
+	opacity: .50;
     filter: alpha(opacity=50);
 }
+
 
 /* The classes/ids below are just used in this example. You can use whatever you like */
 #parent {
     width: 100%;
-    background: #eeeeee;
+    
 }
 
 .column {
@@ -123,11 +153,12 @@ border:1px solid #ccc;
     background:#E7FECD;
     color: #666666;
     width: 33%; /* Default value, overridden by class */ 
+    height:100%;
 }
 
 /* Any spacing must be on a child of the column, not the column itself */
-.content {
-    border: 1px solid black;
+.column_content {
+    border: px solid black;
     margin: 5px;
     padding: 5px;
 }
