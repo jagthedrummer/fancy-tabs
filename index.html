@@ -19,8 +19,17 @@
 	      function() { createTabs() }
 	    );
 		
+		
+		var tabs = null;
+		var tabs2 = null;
 		function createTabs(){
-			new FancyTabs('demo-tabs',{})			
+			tabs = new FancyTabs('demo-tabs',{})
+			tabs2 = new FancyTabs('demo-tabs-2',{})
+			$('new_tab_add').observe('click',createNewTab);			
+		}
+		
+		function createNewTab(){
+			tabs.addTab($('new_tab_title').value,$('new_tab_content').value);
 		}
 		
 	</script>
@@ -45,9 +54,45 @@
 			<p>Ooooooh!!!!!!!!!!!!! Fancy!</p>
 		</div>
 		
+	</div>
+	
+	<div class="fancy-tabs" id="demo-tabs-2">
 		
+		<div class="handle">Tab #1</div>
+		<div class="content">
+			<h1>Tab #1</h1>
+			<p>Here is some content that goes in the first tab.</p>
+		</div>
+		
+		<div class="handle">Tab #2</div>
+		<div class="content">
+			<h1>Tab #2</h1>
+			<p>Here is some content that goes in the second tab.</p>
+			<p>Ooooooh!!!!!!!!!!!!! Fancy!</p>
+		</div>
 		
 	</div>
+
+	<form>
+		<h3>Add a new tab</h3>
+		<label>
+			Title:<br/>
+			<input id="new_tab_title" value="New Tab"/>
+		</label>
+		<br/>
+		<label>
+			Content:<br/>
+
+<textarea rows="12" cols="35" id="new_tab_content">
+<p>
+  Some content should go here!
+</p>
+</textarea>
+
+		</label>
+		<br/>
+		<input type="button" id="new_tab_add" value="Add the tab">
+	</form>
 
 </body>
 </html>

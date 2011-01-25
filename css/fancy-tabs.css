@@ -1,20 +1,60 @@
 .fancy-tabs{
-	border:1px solid red;
+	
 }
 
 .fancy-tab-frame{
-	border:1px solid blue;
+	list-style:none;
+	margin:0px;
+	padding:0px;
+	margin-bottom:-1px;	
 }
 
 .fancy-tab-frame .fancy-tab{
 	border:1px solid black;
 	float:left;
-	padding:3px 10px;
+	padding:3px;
+	z-index:2;
+}
+
+.fancy-tab{
+	-webkit-border-top-left-radius: 5px;
+	-webkit-border-top-right-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	-moz-border-radius-topright: 5px;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	background:#ccc;
+	cursor:default;
 }
 
 
+.fancy-tab.active{
+	background:#fff;
+	border-bottom:1px solid #fff;
+}
+
+.fancy-tab-handle{
+	float:left;
+}
+
+.fancy-tab-close{
+	width:23px;
+	height:20px;
+	margin:2px;
+	float:right;
+	background:#aaa url('close.gif') 0 0 no-repeat;
+	visibility:hidden;
+}
+
+.fancy-tab.active .fancy-tab-close{
+	visibility:visible;
+}
+
 .fancy-content-frame{
-	border:1px solid green;
+	border:1px solid black;
+	padding:10px;
+	position:relative;
+	z-index:1;
 }
 
 .tab-handle{
@@ -27,13 +67,6 @@ border:1px solid #ccc;
 
 
 
-.fancy-tab{
-	background:#ccc;	
-}
-
-.fancy-tab.active{
-	background:#fff;	
-}
 
 .fancy-content{
 	display:none;	
@@ -43,6 +76,22 @@ border:1px solid #ccc;
 	display:block;	
 }
 
+
+/*Droppable areas*/
+.fancy-droppable-east{
+	border:0px solid red;
+	position:absolute;
+	top:0px;
+	bottom:0px;
+	right:0px;
+	width:5px;
+}
+
+.fancy-droppable-east.dropzone{
+	border:1px solid black;
+	background:#ccc;
+	width:25px;
+}
 
 /*This lets us make sure that the fancy-tab-gutter will always enclose the tabs inside it.*/
 .clearfix:after{content:"\0020";display:block;height:0;clear:both;visibility:hidden;overflow:hidden;}
