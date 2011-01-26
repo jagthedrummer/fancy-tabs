@@ -9,6 +9,10 @@
 	margin-bottom:-1px;	
 }
 
+.fancy-tab-frame.dropzone{
+	background:#ccc;
+}
+
 .fancy-tab-frame .fancy-tab{
 	border:1px solid black;
 	float:left;
@@ -64,6 +68,7 @@ border:1px solid #ccc;
 
 
 .fancy-tab-set{
+	padding:5px;
 	height:100%;
 }
 
@@ -72,14 +77,19 @@ border:1px solid #ccc;
 }
 
 
-
+.fancy-content-holder{
+border:1px solid white; /*Yes this really, really does need to be here. It's a collapsing margin thing*/
+}
 
 .fancy-content{
-	display:none;	
+	display:none;
+	/*visibility:hidden;*/
+	overflow:auto;
 }
 
 .fancy-content.active{
-	display:block;	
+	/*visibility:visible;*/
+	display:block;
 }
 
 
@@ -130,8 +140,11 @@ border:1px solid #ccc;
 .splitpane-divider {
     border: 1px solid black;
     background:#5B207B;
-    opacity: .20;
-    filter: alpha(opacity=20);
+    opacity: .00;
+    filter: alpha(opacity=00);
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
 }
 
 .splitpane-divider:hover{

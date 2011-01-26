@@ -109,7 +109,7 @@ var FancyTabs = Class.create({
 			//console.log(targets);
 			targets = targets.concat(tabs.allLocalDragTargets());
 		}.bind(targets));
-		console.log(targets)
+		//console.log(targets)
 		return targets;
 	},
 	
@@ -119,7 +119,7 @@ var FancyTabs = Class.create({
 	 */
 	allLocalDragTargets : function() {
 		var targets = $A();
-		console.log("getting localDragTargets from sets : " + this.tabSets.length)
+		//console.log("getting localDragTargets from sets : " + this.tabSets.length)
 		this.tabSets.each(function(set){
 			//console.log(targets);
 			targets = targets.concat(set.dragTargets());
@@ -137,7 +137,7 @@ var FancyTabs = Class.create({
 		if (afterCol != null) {
 			origWidth = this.parsePercent(afterCol.style.width);
 			origLeft = this.parsePercent(afterCol.style.left);
-			newWidth = origWidth/2;
+			newWidth = origWidth/2 - 0.1; //need to subtract just a little to keep things sane.  Why is this happening?
 			newLeft = origLeft + newWidth;
 			afterCol.setStyle({'width' : newWidth + "%" })
 			splitCol.setStyle({'width' : newWidth + "%", 'left' : newLeft + "%" })
@@ -154,6 +154,7 @@ var FancyTabs = Class.create({
 		} else {
 			this.splitPane.insert(splitCol);
 		}
+		this.setIdealHeight();
 		this.reSplit();
 		return splitCol;
 	},
@@ -164,26 +165,27 @@ var FancyTabs = Class.create({
 		this.tabSets = this.tabSets.without(oldCol.fancyTabSet);
 		var prevCol = oldCol.previous();
 		if (prevCol != null) {
-			console.log("we found a previous element")
+			//console.log("we found a previous element")
 			origWidth = this.parsePercent(prevCol.style.width);
 			oldWidth = this.parsePercent(oldCol.style.width);
-			newWidth = origWidth + oldWidth;
+			newWidth = Math.floor(origWidth + oldWidth);
 			prevCol.setStyle({'width': newWidth + "%"});
 		}else{
 			var nextCol = oldCol.next();
 			if(nextCol != null){
-				console.log("we fould a next() element");
+				//console.log("we fould a next() element");
 				origWidth = this.parsePercent(nextCol.style.width);
 				oldWidth = this.parsePercent(oldCol.style.width);
 				oldLeft = this.parsePercent(oldCol.style.left);
-				newWidth = origWidth + oldWidth;
-				newLeft = oldLeft - oldWidth
+				newWidth = Math.floor(origWidth + oldWidth);
+				newLeft = Math.floor(oldLeft - oldWidth);
 				nextCol.setStyle({'width': newWidth + "%", 'left' : newLeft + "%" });
 			}
 		}
 		oldCol.fancyTabSet.stopDragsAndSorts();
 		//Sortable.destroy(oldCol.tabFrame);
 		oldCol.parentNode.removeChild(oldCol);
+		this.setIdealHeight();
 		this.reSplit();
 	},
 	
@@ -191,21 +193,57 @@ var FancyTabs = Class.create({
 		return this.splitPane.select(".fancy-split-col");
 	},
 	
+	/*
+	 * Get the max height of any tab sets
+	 */
+	getMaxHeight : function(){
+		var maxHeight = 0;
+		this.splitCols().each(function(splitCol){
+			var height = splitCol.fancyTabSet.getMaxHeight();
+			if(height > maxHeight){
+				maxHeight = height;
+			}
+		}.bind(maxHeight));
+		
+		//console.log("maxHeight = " + maxHeight);
+		return maxHeight;
+	},
+	
+	/*
+	 * setContentHeight
+	 * height : an integer (pixels)
+	 */
+	setContentHeight : function(height){
+		this.splitCols().each(function(splitCol){
+			splitCol.fancyTabSet.setContentHeight(height);
+		});
+	},
+	
+	/*
+	 * Set the ideal height for all content
+	 */
+	setIdealHeight : function(){
+		var height = this.getMaxHeight();
+		//console.log("setting idealHeight of " + height);
+		this.setContentHeight(height);
+	},
+	
 	reSplit : function(){
 		var cols = this.splitCols();
 		if(cols.length > 1){
-			for(var c = 0; c < cols.length -1; c++ ){
+			for(var c = 0; c < cols.length -1; c++ ){ //only go to next to last one since we're pulling them in pairs
 				//var width = 100/cols.length;
 				//var offset = i * width;
 				var col1 = cols[c];
 				var col2 = cols[c+1];
-				console.log("col1 " + col1.style.width + " " + col1.style.left );
-				console.log("col2 " + col2.style.width + " " + col2.style.left );
-				var newPane = new SplitPane(col1, col1.style.width, col2, col2.style.left, col2.style.width, { active: true });
+				//console.log("col1 " + col1.style.width + " " + col1.style.left );
+				//console.log("col2 " + col2.style.width + " " + col2.style.left );
+				var newPane = new SplitPane(col1, col1.style.width, col2, col2.style.left, col2.style.width, { active: true, onEnd : this.setIdealHeight.bind(this) });
 				newPane.set();
 				this.splitPane.panes.push(newPane);
 			}
 		}
+		
 	},
 	
 	unSplit : function(){
@@ -228,6 +266,7 @@ var FancyTabs = Class.create({
 			this.addNewSplitCol();
 		}
 		this.splitCols().first().fancyTabSet.addTab(handle,content);
+		this.setIdealHeight();
 	},
 	
 	parsePercent : function(percentString){
@@ -308,6 +347,33 @@ var FancyTabSet = Class.create({
 		
 	},
 	
+	
+	/*
+	 * Get's the height of the tallest content div in the tab set
+	 */
+	getMaxHeight : function(){
+		var maxHeight = 0;
+		this.tabs.each(function(tab){
+			var height =  tab.contentHeight();
+			//console.log("  a tab height = " + height);
+			if(height > maxHeight){
+				maxHeight = height;
+			}
+		}.bind(maxHeight));
+		//console.log(" in FancyTabSet the maxHeight = " + maxHeight);
+		return maxHeight;
+	},
+	
+	/*
+	 * setContentHeight on all tabs
+	 * height : an integer (pixels)
+	 */
+	setContentHeight : function(height){
+		this.tabs.each(function(tab){
+			tab.setContentHeight(height);
+		});
+	},
+	
 	/*
 	 * Pass in another tabSet so that tabs
 	 * can be dragged from one to the other.
@@ -335,9 +401,10 @@ var FancyTabSet = Class.create({
 										   }
 					  );
 					  
-		Sortable.create(this.tabFrame,{overlap:'horizontal',
+		Sortable.create(this.tabFrame,{hoverclass:'dropzone',
+										  overlap:'horizontal',
 										  constraint:false,
-										  ghosting : false,
+										  ghosting : true,
 										  revert : false,
 										  dropOnEmpty : true,
 										  containment:this.fancyTabs.allDragTargets(),
@@ -348,7 +415,7 @@ var FancyTabSet = Class.create({
 	},
 	
 	eastDrop : function(tab){
-		console.log(tab);
+		//console.log(tab);
 		var col = this.splitCol;
 		this.fancyTabs.moveTabAfterCol(tab.fancy_tab,col);
 		
@@ -405,7 +472,7 @@ var FancyTabSet = Class.create({
 			newWidth = origWidth + myWidth;
 			prevCol.setStyle({'width': newWidth + "%"});
 		}else{
-			console.log("we don't have a previous col!");
+			//console.log("we don't have a previous col!");
 		}
 		this.splitCol.parentNode.removeChild(this.splitCol);
 		this.reSplit();
@@ -422,6 +489,7 @@ var FancyTabSet = Class.create({
 				//console.log("need to move for " + tab.innerHTML + " " + this.id + " - " + tab.tab_set.id)
 				tab.tab_set.removeTabContent(tab.fancy_tab);
 				this.insertTab(tab.fancy_tab);
+				this.fancyTabs.setIdealHeight();
 			}
 		}
 	},
@@ -458,9 +526,9 @@ var FancyTabSet = Class.create({
 	 * For passing in a pre built tab
 	 */
 	addFancyTab : function(tab){
-		console.log(tab.tab_elem)
-		console.log(tab)
-		console.log(this.tabFrame)
+		//console.log(tab.tab_elem)
+		//console.log(tab)
+		//console.log(this.tabFrame)
 		this.tabFrame.appendChild(tab.tab_elem);
 		this.insertTab(tab);
 	},
@@ -546,9 +614,37 @@ var FancyTab = Class.create({
 		this.closer_elem = new Element('a', {'class':'fancy-tab-close'})
 		this.tab_elem.appendChild(this.handle_elem);
 		this.tab_elem.appendChild(this.closer_elem);
-		this.content_elem = new Element('div', {'class': 'fancy-content'}).update(this.content);
+		this.content_holder_elem = new Element('div', {'class': 'fancy-content-holder'}).update(this.content);
+		this.content_elem = new Element('div', {'class': 'fancy-content'}).update(this.content_holder_elem);
 		this.tab_elem.observe(this.parent.fancyTabs.options.onEvent,this.activateTab.bind(this));
 		this.closer_elem.observe('click',this.closeTab.bind(this));
+	},
+	
+	/*
+	 * Return the calculated height
+	 * of the content in this tab
+	 */
+	contentHeight : function(){
+		var isActive = true;
+		if(!this.content_elem.hasClassName("active")){
+			isActive = false;
+			this.content_elem.addClassName("active");
+		}
+		var height =  this.content_holder_elem.getHeight();
+		//console.log("    in FancyTab the height = " + height);
+		if(!isActive){
+			this.content_elem.removeClassName("active");
+		}
+		return height;
+	},
+	
+	
+	/*
+	 * Set the content height
+	 * height : an integer (pixels)
+	 */
+	setContentHeight : function(height){
+		this.content_elem.setStyle({'height':height+'px'});
 	},
 	
 	/*
