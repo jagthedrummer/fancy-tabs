@@ -287,18 +287,18 @@ var FancyTabs = Class.create({
 	
 	moveTabAfterCol : function(fancyTab,afterCol){
 		var newCol = this.addNewSplitCol(afterCol);
-		fancyTab.parent.removeTabContent(fancyTab);
-		newCol.fancyTabSet.addFancyTab(fancyTab);
+		fancyTab.parent.removeTabContent(fancyTab,true);
+		newCol.fancyTabSet.addFancyTab(fancyTab,true);
 		newCol.fancyTabSet.setActiveTab(fancyTab);
 		afterCol.fancyTabSet.setActiveTab(afterCol.fancyTabSet.tabs.first());
 	},
 	
 	/*pass in the elements/content to be used as the tab handle/content*/
-	addTab : function(handle,content,permanent){
+	addTab : function(handle,content,permanent,options){
 		if(this.splitCols().length == 0){
 			this.addNewSplitCol();
 		}
-		this.splitCols().last().fancyTabSet.addTab(handle,content,permanent);
+		this.splitCols().last().fancyTabSet.addTab(handle,content,permanent,options);
 		this.setIdealHeight();
 	},
 	
@@ -520,8 +520,8 @@ var FancyTabSet = Class.create({
 			tab = tabs[i];
 			if(tab.tab_set.id != this.id){
 				//console.log("need to move for " + tab.innerHTML + " " + this.id + " - " + tab.tab_set.id)
-				tab.tab_set.removeTabContent(tab.fancy_tab);
-				this.insertTab(tab.fancy_tab);
+				tab.tab_set.removeTabContent(tab.fancy_tab,true);
+				this.insertTab(tab.fancy_tab,true);
 				this.fancyTabs.setIdealHeight();
 			}
 		}
@@ -550,8 +550,8 @@ var FancyTabSet = Class.create({
 	*/
 	
 	/*pass in the elements/content to be used as the tab handle/content*/
-	addTab : function(handle,content,permanent){
-		var tab = new FancyTab(handle,content,permanent,this);
+	addTab : function(handle,content,permanent,options){
+		var tab = new FancyTab(handle,content,permanent,this,options);
 		this.addFancyTab(tab);
 	},
 	
@@ -569,10 +569,14 @@ var FancyTabSet = Class.create({
 	/*
 	 * This is called to insert a FancyTab object into this set
 	 */
-	insertTab : function(tab){
+	insertTab : function(tab,forMove){
 		tab.setParent(this);
 		
 		this.contentFrame.appendChild(tab.content_elem);
+		if(forMove){
+			tab.afterMove();
+		}
+		
 		this.tabs.push(tab);
 		this.setActiveTab(tab);
 		this.initDragsAndSorts();
@@ -584,7 +588,10 @@ var FancyTabSet = Class.create({
 	/*
 	 * Removes tab content after a move or close
 	 */
-	removeTabContent : function(tab){
+	removeTabContent : function(tab,forMove){
+		if(forMove){
+			tab.beforeMove();
+		}
 		this.contentFrame.removeChild(tab.content_elem);
 		this.tabs = this.tabs.without(tab);
 		if(this.tabs.length > 0){
@@ -602,7 +609,7 @@ var FancyTabSet = Class.create({
 	closeTab : function(tab){
 		//console.log("removing on" + this.id + " for " + tab.handle_elem.innerHTML)
 		this.tabFrame.removeChild(tab.tab_elem);
-		this.removeTabContent(tab);	
+		this.removeTabContent(tab,false);	
 	},
 	
 	setActiveTab : function(tab){
@@ -634,7 +641,7 @@ var FancyTab = Class.create({
 	 * content : the content for the panel the tab represents
 	 * parent : the FancyTabs object that creates this tab
 	 */	
-	initialize: function(handle, content, permanent, parent){
+	initialize: function(handle, content, permanent, parent,options){
 		this.handle = handle;
 		this.content = content;	
 		this.permanent = permanent;
@@ -643,6 +650,14 @@ var FancyTab = Class.create({
 		if(this.permanent){
 			this.tab_elem.addClassName('permanent');
 		}
+		
+		
+		this.options = {
+			beforeMove : Prototype.emptyFunction,
+			afterMove : Prototype.emptyFunction
+		}
+		if(options != null){Object.extend(this.options,options);}
+		
 		//a couple of hacks to let even passing work out right.		
 		this.setParent(parent);
 		this.tab_elem.fancy_tab = this;
@@ -673,6 +688,26 @@ var FancyTab = Class.create({
 		}
 		return height;
 	},
+	
+	/*
+	 * Pass through the callback 
+	 * before the content panel is moved
+	 * in the DOM
+	 */
+	beforeMove : function(){
+		this.options.beforeMove();
+	},
+	
+	/*
+	 * Pass through the callback 
+	 * after the content panel is moved
+	 * in the DOM
+	 */
+	afterMove : function(){
+		this.options.afterMove();
+	},
+	
+	
 	
 	
 	/*

@@ -31,7 +31,13 @@
 		}
 		
 		function createNewTab(){
-			tabs.addTab($('new_tab_title').value,$('new_tab_content').value,$('new_tab_permanent').checked);
+			tabs.addTab($('new_tab_title').value,
+						$('new_tab_content').value,
+						$('new_tab_permanent').checked,
+						{ beforeMove : function(){console.log('beforeMove callback');},
+						  afterMove : function(){console.log('afterMove callback');} 
+						}
+			);
 		}
 		
 	</script>
