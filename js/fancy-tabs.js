@@ -222,7 +222,7 @@ var FancyTabs = Class.create({
 	
 	splitCols : function(){
 		var cols = this.splitPane.select(".fancy-split-col");
-		console.log(this.id + " " + cols.length)
+		//console.log(this.id + " " + cols.length)
 		return cols 
 	},
 	
