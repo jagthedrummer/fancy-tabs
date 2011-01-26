@@ -558,12 +558,12 @@ var FancyTabSet = Class.create({
 	/*
 	 * For passing in a pre built tab
 	 */
-	addFancyTab : function(tab){
+	addFancyTab : function(tab,forMove){
 		//console.log(tab.tab_elem)
 		//console.log(tab)
 		//console.log(this.tabFrame)
 		this.tabFrame.appendChild(tab.tab_elem);
-		this.insertTab(tab);
+		this.insertTab(tab,forMove);
 	},
 	
 	/*
