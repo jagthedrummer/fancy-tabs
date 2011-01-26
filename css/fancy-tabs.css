@@ -30,6 +30,7 @@
 	cursor:default;
 	background:#ccc;
 	margin:0px;
+	margin-right:5px;
 }
 
 
@@ -55,6 +56,11 @@
 	visibility:visible;
 }
 
+.fancy-tab.permanent .fancy-tab-close{
+	visibility:hidden;
+	width:1px;
+}
+	
 .fancy-content-frame{
 	border:1px solid black;
 	padding:10px;

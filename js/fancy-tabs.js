@@ -18,7 +18,8 @@ var FancyTabs = Class.create({
 		this.options = {
 			classNames : {
 				handle : 'handle',
-				content : 'content'
+				content : 'content',
+				tabSet : 'tab-set'
 			},
 			parseContainer : true,
 			onEvent : 'click',
@@ -48,6 +49,36 @@ var FancyTabs = Class.create({
 	},
 	
 	parseContainer : function(){
+		sets = this.tabContainer.select("." + this.options.classNames.tabSet);
+		if (sets.length == 0) {
+			this.parseBasicContainer();
+		}else{
+			this.parseSplitContainer(sets);
+		}
+	},
+	
+	/*
+	 * Parse markup with pre built splits
+	 */
+	parseSplitContainer : function(sets){
+		
+		sets.each(function(set){
+			this.addNewSplitCol();
+			handles = set.select("." + this.options.classNames.handle);
+			contents = set.select("." + this.options.classNames.content);
+			if(handles.length != contents.length){
+				throw("The number of handle divs ("+handles.length+") vs. content divs ("+contents.length+") does not match up.");
+				return;
+			}
+			for(var i=0; i<handles.length; i++){
+				this.addTab(handles[i],contents[i],handles[i].hasClassName('permanent'));
+			}
+			//
+		}.bind(this));
+		
+	},
+	
+	parseBasicContainer : function(){
 		handles = this.tabContainer.select("." + this.options.classNames.handle);
 		contents = this.tabContainer.select("." + this.options.classNames.content);
 		if(handles.length != contents.length){
@@ -55,7 +86,7 @@ var FancyTabs = Class.create({
 			return;
 		}
 		for(var i=0; i<handles.length; i++){
-			this.addTab(handles[i],contents[i]);
+			this.addTab(handles[i],contents[i],handles[i].hasClassName('permanent'));
 		}
 		//this.setActiveTab(this.tabs.first());
 	},
@@ -190,7 +221,9 @@ var FancyTabs = Class.create({
 	},
 	
 	splitCols : function(){
-		return this.splitPane.select(".fancy-split-col");
+		var cols = this.splitPane.select(".fancy-split-col");
+		console.log(this.id + " " + cols.length)
+		return cols 
 	},
 	
 	/*
@@ -261,11 +294,11 @@ var FancyTabs = Class.create({
 	},
 	
 	/*pass in the elements/content to be used as the tab handle/content*/
-	addTab : function(handle,content){
+	addTab : function(handle,content,permanent){
 		if(this.splitCols().length == 0){
 			this.addNewSplitCol();
 		}
-		this.splitCols().first().fancyTabSet.addTab(handle,content);
+		this.splitCols().last().fancyTabSet.addTab(handle,content,permanent);
 		this.setIdealHeight();
 	},
 	
@@ -517,8 +550,8 @@ var FancyTabSet = Class.create({
 	*/
 	
 	/*pass in the elements/content to be used as the tab handle/content*/
-	addTab : function(handle,content){
-		var tab = new FancyTab(handle,content,this);
+	addTab : function(handle,content,permanent){
+		var tab = new FancyTab(handle,content,permanent,this);
 		this.addFancyTab(tab);
 	},
 	
@@ -601,12 +634,15 @@ var FancyTab = Class.create({
 	 * content : the content for the panel the tab represents
 	 * parent : the FancyTabs object that creates this tab
 	 */	
-	initialize: function(handle, content, parent){
+	initialize: function(handle, content, permanent, parent){
 		this.handle = handle;
 		this.content = content;	
-		
+		this.permanent = permanent;
 		
 		this.tab_elem = new Element('li', {'class': 'fancy-tab'})
+		if(this.permanent){
+			this.tab_elem.addClassName('permanent');
+		}
 		//a couple of hacks to let even passing work out right.		
 		this.setParent(parent);
 		this.tab_elem.fancy_tab = this;

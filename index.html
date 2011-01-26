@@ -31,7 +31,7 @@
 		}
 		
 		function createNewTab(){
-			tabs.addTab($('new_tab_title').value,$('new_tab_content').value);
+			tabs.addTab($('new_tab_title').value,$('new_tab_content').value,$('new_tab_permanent').checked);
 		}
 		
 	</script>
@@ -42,20 +42,24 @@
 	<h1>Fancy Tabs demo page</h1>
 
 	<div class="fancy-tabs" id="demo-tabs">
-		
-		<div class="handle">Tab #1</div>
-		<div class="content">
-			<h1>Tab #1</h1>
-			<p>Here is some content that goes in the first tab.</p>
+		<div class="tab-set">
+			<div class="handle permanent">Tab #1</div>
+			<div class="content">
+				<h1>Tab #1 = Permanent!</h1>
+				<p>Here is some content that goes in the first tab.</p>
+				<p>
+					You can't make it go away!
+				</p>
+			</div>
 		</div>
-		
-		<div class="handle">Tab #2</div>
-		<div class="content">
-			<h1>Tab #2</h1>
-			<p>Here is some content that goes in the second tab.</p>
-			<p>Ooooooh!!!!!!!!!!!!! Fancy!</p>
+		<div class="tab-set">
+			<div class="handle">Tab #2</div>
+			<div class="content">
+				<h1>Tab #2</h1>
+				<p>Here is some content that goes in the second tab.</p>
+				<p>Ooooooh!!!!!!!!!!!!! Fancy!</p>
+			</div>
 		</div>
-		
 	</div>
 	
 	<div class="fancy-tabs" id="demo-tabs-2">
@@ -80,6 +84,11 @@
 		<label>
 			Title:<br/>
 			<input id="new_tab_title" value="New Tab"/>
+		</label>
+		<label>
+			
+			<input type="checkbox" id="new_tab_permanent" value="true"/>
+			Permanent
 		</label>
 		<br/>
 		<label>
