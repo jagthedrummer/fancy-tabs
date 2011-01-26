@@ -82,6 +82,11 @@ var FancyTabs = Class.create({
 	 */
 	addFancyTabs : function(otherTabs){
 		this.otherFancyTabs.push(otherTabs);
+		this.splitCols().each(function(splitCol){
+			splitCol.fancyTabSet.stopDragsAndSorts();
+			splitCol.fancyTabSet.initDragsAndSorts();
+		});
+		
 	},
 	
 	
@@ -104,6 +109,7 @@ var FancyTabs = Class.create({
 			//console.log(targets);
 			targets = targets.concat(tabs.allLocalDragTargets());
 		}.bind(targets));
+		console.log(targets)
 		return targets;
 	},
 	
@@ -175,7 +181,7 @@ var FancyTabs = Class.create({
 				nextCol.setStyle({'width': newWidth + "%", 'left' : newLeft + "%" });
 			}
 		}
-		Droppables.remove(oldCol.fancyTabSet.droppableEast);
+		oldCol.fancyTabSet.stopDragsAndSorts();
 		//Sortable.destroy(oldCol.tabFrame);
 		oldCol.parentNode.removeChild(oldCol);
 		this.reSplit();
@@ -306,9 +312,14 @@ var FancyTabSet = Class.create({
 	 * Pass in another tabSet so that tabs
 	 * can be dragged from one to the other.
 	 */
-	addTabSet : function(tabSet){
+	/*addTabSet : function(tabSet){
 		this.otherTabSets.push(tabSet);
 		this.initDragsAndSorts();
+	},*/
+	
+	
+	stopDragsAndSorts : function(){
+		Droppables.remove(this.droppableEast);
 	},
 	
 	/*
@@ -384,7 +395,7 @@ var FancyTabSet = Class.create({
 	
 	
 	
-	
+	/*
 	removeFromSplitPane : function(){
 		this.unSplit();
 		var prevCol = this.splitCol.previous();
@@ -399,7 +410,7 @@ var FancyTabSet = Class.create({
 		this.splitCol.parentNode.removeChild(this.splitCol);
 		this.reSplit();
 	},
-	
+	*/
 	
 	
 	sortUpdate : function(list){
@@ -415,16 +426,14 @@ var FancyTabSet = Class.create({
 		}
 	},
 	
-	
-	
-	
-	
+		
 	
 	dragTargets : function(){
 		var targets = [this.droppableEast,this.tabFrame];
 		return targets;
 	},
 	
+	/*
 	combinedDragTargets : function(){
 		var targets = this.dragTargets();
 		//console.log("targets = " + targets);
@@ -437,6 +446,7 @@ var FancyTabSet = Class.create({
 		//console.log("targets = " + targets);
 		return targets;
 	},
+	*/
 	
 	/*pass in the elements/content to be used as the tab handle/content*/
 	addTab : function(handle,content){

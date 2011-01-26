@@ -24,6 +24,7 @@
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
 	cursor:default;
+	background:#ccc;
 }
 
 
@@ -84,7 +85,7 @@ border:1px solid #ccc;
 
 /*Droppable areas*/
 .fancy-droppable-east{
-	border:0px solid red;
+	/*border:0px solid red;*/
 	position:absolute;
 	top:0px;
 	bottom:0px;
@@ -100,7 +101,7 @@ border:1px solid #ccc;
 
 
 .fancy-split-pane{
-	border:1px solid red;
+	/*border:1px solid red;*/
 	width: 100%;
 }
 
@@ -112,8 +113,8 @@ border:1px solid #ccc;
     z-index: 1;
     width: 50%; /* Default value, overridden by class */ 
     height:100%;
-	background:#ccf;
-	border:0px solid blue;
+	/*background:#ccf;
+	border:0px solid blue;*/
 }
 
 .fancy-split-col-content{
