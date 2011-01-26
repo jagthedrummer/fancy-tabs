@@ -24,7 +24,7 @@
 		var tabs2 = null;
 		function createTabs(){
 			tabs = new FancyTabs('demo-tabs',{})
-			tabs2 = new FancyTabs('demo-tabs-2',{})
+			tabs2 = new FancyTabs('demo-tabs-2',{ height : "200" })
 			tabs.addFancyTabs(tabs2);
 			tabs2.addFancyTabs(tabs);
 			$('new_tab_add').observe('click',createNewTab);			

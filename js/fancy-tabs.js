@@ -26,6 +26,7 @@ var FancyTabs = Class.create({
 			splitPane : null,
 			splitCol : null,
 			primary : true, //conrols whether it automatially goes away when the last tab is closed
+			height : "dynamic" //by default we exand for contents of the largest tab
 		};
 		
 		this.tabSets = $A();
@@ -256,7 +257,11 @@ var FancyTabs = Class.create({
 	 * Set the ideal height for all content
 	 */
 	setIdealHeight : function(){
-		var height = this.getMaxHeight();
+		
+		var height = this.options.height
+		if(height == "dynamic"){		
+			height = this.getMaxHeight();
+		}
 		//console.log("setting idealHeight of " + height);
 		this.setContentHeight(height);
 	},
