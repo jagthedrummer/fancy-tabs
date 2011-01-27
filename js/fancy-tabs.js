@@ -276,7 +276,7 @@ var FancyTabs = Class.create({
 				var col2 = cols[c+1];
 				//console.log("col1 " + col1.style.width + " " + col1.style.left );
 				//console.log("col2 " + col2.style.width + " " + col2.style.left );
-				var newPane = new SplitPane(col1, col1.style.width, col2, col2.style.left, col2.style.width, { active: true, onEnd : this.setIdealHeight.bind(this) });
+				var newPane = new SplitPane(col1, this.parsePercent(col1.style.width), col2, this.parsePercent(col2.style.left), this.parsePercent(col2.style.width), { active: true, onEnd : this.setIdealHeight.bind(this) });
 				newPane.set();
 				this.splitPane.panes.push(newPane);
 			}
