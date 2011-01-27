@@ -47,7 +47,7 @@
 	width:23px;
 	height:20px;
 	margin:2px;
-	float:right;
+	float:left;
 	background:#aaa url('close.gif') 0 0 no-repeat;
 	visibility:hidden;
 }
@@ -196,6 +196,21 @@ border:1px solid white; /*Yes this really, really does need to be here. It's a c
 
 
 
-/*This lets us make sure that the fancy-tab-gutter will always enclose the tabs inside it.*/
-.clearfix:after{content:"\0020";display:block;height:0;clear:both;visibility:hidden;overflow:hidden;}
-.clearfix {display:block;}
+/*
+ * This lets us make sure that the fancy-tab-gutter will always enclose the tabs inside it.
+ * We're namspcing it since many frameworks include a .clearfix rule of somesort.
+ */
+
+.fancy-tabs-clearfix:after {
+     visibility: hidden;
+     display: block;
+     font-size: 0;
+     content:"\0020";
+     clear: both;
+     height: 0;
+     }
+.fancy-tabs-clearfix { display: inline-block; }
+/* start commented backslash hack \*/
+* html .fancy-tabs-clearfix { height: 1%; }
+.fancy-tabs-clearfix { display: block; }
+/* close commented backslash hack */

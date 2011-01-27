@@ -95,7 +95,7 @@ var FancyTabs = Class.create({
 	initSplitPane : function(){
 		
 		// First create a div that will be the parent for our new SplitPane
-		this.splitPane = new Element('div', {'class': 'clearfix fancy-split-pane'});
+		this.splitPane = new Element('div', {'class': 'fancy-tabs-clearfix fancy-split-pane'});
 		this.splitPane.panes = $A(); //This will hold all of the split panes that get created
 		this.tabContainer.insert( this.splitPane );
 		//this.splitCol = new Element('div', {'class': 'fancy-split-col','id': 'col1'  });
@@ -355,7 +355,7 @@ var FancyTabSet = Class.create({
 	 * Setup the main container that will hold everything together
 	 */
 	initTabSet : function(){
-		this.tabSet = new Element('div', {'class': 'clearfix fancy-tab-set','id':this.id+'-tab-set'});
+		this.tabSet = new Element('div', {'class': 'fancy-tabs-clearfix fancy-tab-set','id':this.id+'-tab-set'});
 		this.splitCol.appendChild(this.tabSet);
 		//this.tabContainer.appendChild(this.tabSet);
 	},
@@ -364,7 +364,7 @@ var FancyTabSet = Class.create({
 	 * Setup the container that will hold the actual tabs
 	 */
 	initTabFrame : function(){
-		this.tabFrame = new Element('ul', {'class': 'clearfix fancy-tab-frame','id':this.id+'-tab-frame'});
+		this.tabFrame = new Element('ul', {'class': 'fancy-tabs-clearfix fancy-tab-frame','id':this.id+'-tab-frame'});
 		this.tabSet.appendChild(this.tabFrame);
 	},
 	
@@ -372,7 +372,7 @@ var FancyTabSet = Class.create({
 	 * Setup the container that will hold the content panels
 	 */
 	initContentFrame : function(){
-		this.contentFrame = new Element('div', {'class': 'clearfix fancy-content-frame','id':this.id+'-content-frame'});
+		this.contentFrame = new Element('div', {'class': 'fancy-tabs-clearfix fancy-content-frame','id':this.id+'-content-frame'});
 		this.tabSet.appendChild(this.contentFrame);
 	},
 	
@@ -480,7 +480,7 @@ var FancyTabSet = Class.create({
 		newCol.setStyle({'width' : newWidth + "%", 'left' : newLeft + "%" })
 		this.splitCol.insert({after: newCol});
 		// Create a new tab container div in col2
-		var newTabDiv = new Element('div', {'class': 'clearfix'});
+		var newTabDiv = new Element('div', {'class': 'fancy-tabs-clearfix'});
 		newCol.insert(newTabDiv);
 		
 		var newTabs = new FancyTabs(newTabDiv, {splitPane : this.splitPane, splitCol : newCol, primary : false } );
