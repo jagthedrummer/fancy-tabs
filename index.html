@@ -42,10 +42,59 @@
 		
 	</script>
 
+	<style type="text/css">
+		body{
+			background:#0d4664;
+			text-align:center;
+		}
+		
+		#pageBody{
+			width:930px;
+			padding:10px;
+			background:white;
+			text-align:left;
+			margin:10px auto;
+			padding-top:0px;
+			border:1px solid black;	
+			-webkit-border-radius: 15px;
+			-moz-border-radius: 15px;
+			border-radius: 15px;
+			-moz-box-shadow: 3px 3px 14px #000;
+			-webkit-box-shadow: 3px 3px 14px #000;
+			box-shadow: 3px 3px 14px #000;
+		}
+		
+		pre{
+			border:1px solid #ccc;
+			background:#eee;
+			padding:10px;
+		}
+		
+		#footer{
+			font-size:0.9em;
+			color:white;
+		}
+		#footer a{
+			color:white;
+		}
+	</style>
+
+
 </head>
 <body>
+<div id="pageBody">
+	<h1>FancyTabs</h1>
 
-	<h1>Fancy Tabs demo page</h1>
+	<p>
+		FancyTabs is a JavaScript library built on top of Prototype and Scriptaculous that 
+		provides application developers an easy way to include dynamic tabbed panels
+		in their applictaion.
+	</p>
+	<p>
+		FancyTabs was originally conceived to provide a some what 'Eclipse like' interface
+		with a file browser and multiple editor tabs within the 
+		<a href="http://www.webapeel.com/">aPeel content management system</a>.
+	</p>
 
 	<div class="fancy-tabs" id="demo-tabs">
 		<div class="tab-set">
@@ -111,7 +160,7 @@
 		<input type="button" id="new_tab_add" value="Add the tab">
 	</form>
 
-
+<!--
 <div id="parent">
 <div id="lhs" class="column"><p class="column_content">
 <span style="display: block; white-space: nowrap; overflow: hidden">This is some clipped text that will be in the left column.</span>
@@ -120,6 +169,7 @@
 <div id="mid" class="column"><p class="column_content">This is some text that will be in the middle column.</p></div>
 <div id="rhs" class="column"><p class="column_content">This is some text that will be in the right column.</p></div>
 </div>
+-->
 
 <script language="JavaScript" type="text/JavaScript">
 <!--
@@ -127,6 +177,17 @@ new SplitPane("lhs", 33.3, "mid", 33.33, 33.3, { active: true });
 new SplitPane("mid", 33.3, "rhs", 66.66, 33.3, { active: true }); 
 //-->
 </script>
+
+
+</div>
+
+
+	<div id="footer">
+		FancyTabs is a production of <a href="http://www.octolabs.com/">OctoLabs</a>
+		<br/>
+		<a href="http://www.octolabs.com/"><img src="images/octologo.png" border="0"></a>
+	</div>
+
 
 </body>
 </html>
