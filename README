@@ -5,4 +5,8 @@ Goals:
 * Easy tab panel creation from basic markup
 * Easy dynamic addition of tabs
 * Drag & drop reordering of tabs
-* Ability to split a tab panel in halt to have two tabs open side by side
+* Ability to split a tab panel in half to have two tabs open side by side
+
+See index.html for a demo an instructions.
+
+http://www.webapeel.com/javascripts/fancy-tabs/index.html
