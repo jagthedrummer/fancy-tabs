@@ -1,5 +1,7 @@
 A tab system based on Scriptaculous and Prototype.js.
 
+[![Code Climate](https://codeclimate.com/repos/52f68088e30ba0365a015072/badges/183235c0f7e4f4f0a857/gpa.png)](https://codeclimate.com/repos/52f68088e30ba0365a015072/feed)
+
 Goals:
 
 * Easy tab panel creation from basic markup
@@ -9,4 +11,4 @@ Goals:
 
 See index.html for a demo an instructions.
 
-http://www.webapeel.com/javascripts/fancy-tabs/index.html
+http://jagthedrummer.github.io/fancy-tabs/
